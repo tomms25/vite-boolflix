@@ -1,29 +1,63 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
+<script>
+import axios from 'axios';
+import MoviesCardList from './components/MoviesCardList.vue'
+import Header from './components/Header.vue';
+import { store } from './store.js';
+export default {
+  components: {
+    MoviesCardList,
+    Header,
+  },
+  data() {
+    return {
+      store,
+    }
+  },
+  methods: {
+    getMovies() {
+      let myUrl = store.moviesAPI;
+      // se l'utente scrive il nome di un film, myUrl viene sostituito dalla query del film cercato e simili
+      if (store.searchText !== '') {
+        myUrl = `https://api.themoviedb.org/3/search/movie?api_key=6fd82c7e095558dcca8a44519f3dc58a&query=${store.searchText}`
+      }
+      // per connettersi all api
+      axios
+        .get(myUrl)
+        .then(res => {
+          store.moviesList = res.data.results
+        }
+        )
+    },
+    getTv() {
+      let myUrl = store.tvAPI;
+      if (store.searchText !== '') {
+        myUrl = `https://api.themoviedb.org/3/search/tv?api_key=6fd82c7e095558dcca8a44519f3dc58a&query=${store.searchText}`
+      }
+      axios
+        .get(myUrl)
+        .then(res => {
+          store.tvList = res.data.results
+        }
+        )
+    },
+    searchBoth() {
+      this.getMovies()
+      this.getTv()
+    },
+  },
+  mounted() {
+    this.searchBoth()
+  }
+}
 </script>
 
 <template>
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
-  </div>
-  <HelloWorld msg="Vite + Vue" />
+  <Header @search="searchBoth" />
+  <main>
+    <MoviesCardList />
+  </main>
 </template>
 
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
+<style lang="scss">
+@use './styles/general.scss' as *;
 </style>
